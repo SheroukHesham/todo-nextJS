@@ -2,7 +2,6 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,37 +26,56 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Plus } from "lucide-react";
-import { createTodoAction } from "@/actions/todo.actions";
+import { Pen, Plus } from "lucide-react";
+import { createTodoAction, updateTodoAction } from "@/actions/todo.actions";
 import { formSchema, formValues } from "@/schema";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import LoadingSpinner from "./LoadingSpinner";
-import { set } from "zod";
+import { ITodo } from "@/interfaces";
 
-const defaultValues: Partial<formValues> = {
-  title: "",
-  body: "",
-  completed: false,
-};
+interface IProps {
+  editTodo?: ITodo;
+}
 
-export function DialogMenu() {
-  const [checked, setChecked] = React.useState(false);
+export function DialogMenu({ editTodo }: IProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
   const form = useForm<formValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      title: "",
+      body: "",
+      completed: false,
+    },
   });
+
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        title: editTodo ? editTodo.title : "",
+        body: editTodo ? (editTodo.body as string) : "",
+        completed: editTodo ? editTodo.completed : false,
+      });
+    }
+  }, [open, editTodo, form]);
 
   async function onSubmit(data: formValues) {
     setIsLoading(true);
-    data.completed = checked;
-    await createTodoAction(data);
+
+    if (editTodo) {
+      await updateTodoAction({
+        id: editTodo.id,
+        title: data.title,
+        body: data.body as string,
+        completed: data.completed as boolean,
+      });
+    } else {
+      await createTodoAction(data);
+    }
+
     setIsLoading(false);
-    form.reset();
-    setChecked(false);
     setOpen(false);
   }
 
@@ -65,16 +83,24 @@ export function DialogMenu() {
     <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
-          <Button>
-            <Plus />
-            New Todo
-          </Button>
+          {editTodo ? (
+            <Button size={"icon"}>
+              <Pen size={16} />
+            </Button>
+          ) : (
+            <Button>
+              <Plus />
+              New Todo
+            </Button>
+          )}
         </DialogTrigger>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Add Todo</DialogTitle>
+            <DialogTitle>{editTodo ? "Edit Todo" : "Add Todo"}</DialogTitle>
             <DialogDescription>
-              Add a new todo here. Click save when you&apos;re done.
+              {editTodo
+                ? "Edit your todo here. Click save when you're done."
+                : "Add a new todo here. Click save when you're done."}
             </DialogDescription>
           </DialogHeader>
 
@@ -132,14 +158,14 @@ export function DialogMenu() {
               <Controller
                 name="completed"
                 control={form.control}
-                render={({ fieldState }) => (
+                render={({ field, fieldState }) => (
                   <Field
                     data-invalid={fieldState.invalid}
                     orientation="horizontal"
                   >
                     <Checkbox
-                      checked={checked}
-                      onCheckedChange={() => setChecked((prev) => !prev)}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
                     <Label htmlFor="form-rhf-demo-completed">Completed</Label>
                   </Field>
@@ -155,7 +181,6 @@ export function DialogMenu() {
                   variant="outline"
                   onClick={() => {
                     form.reset();
-                    setChecked(false);
                   }}
                 >
                   Cancel

@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Plus, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
 import { deleteTodoAction } from "@/actions/todo.actions";
 import LoadingSpinner from "./LoadingSpinner";
+import { DialogMenu } from "./DialogMenu";
+import { ITodo } from "@/interfaces";
 
-const TableActions = ({ id }: { id: string }) => {
+const TableActions = ({ todo }: { todo: ITodo }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
     <>
-      <Button size={"icon"}>
-        <Plus size={16} />
-      </Button>
+      <DialogMenu editTodo={todo} />
       <Button
         size={"icon"}
         variant={"destructive"}
         onClick={async () => {
           setIsLoading(true);
-          await deleteTodoAction({ id });
+          await deleteTodoAction({ id: todo.id });
           setIsLoading(false);
         }}
       >

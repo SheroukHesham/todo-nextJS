@@ -23,10 +23,10 @@ export default function TodosTable({ todos }: IProps) {
     <Table>
       <TableCaption>Recent</TableCaption>
       <TableHeader>
-        <TableRow>
+        <TableRow className="bg-sidebar-accent">
           <TableHead>Todo</TableHead>
 
-          <TableHead className="flex justify-center ">Completed</TableHead>
+          <TableHead>Completed</TableHead>
           <TableHead className="text-right">Edit</TableHead>
         </TableRow>
       </TableHeader>
@@ -38,7 +38,7 @@ export default function TodosTable({ todos }: IProps) {
             </TableCell>
 
             <TableCell>
-              <div className="flex justify-center">
+              <div>
                 {todo.completed ? (
                   <Badge>Completed</Badge>
                 ) : (
@@ -49,7 +49,7 @@ export default function TodosTable({ todos }: IProps) {
               </div>
             </TableCell>
             <TableCell className="flex justify-end items-center space-x-2">
-              <TableActions id={todo.id} />
+              <TableActions todo={todo} />
             </TableCell>
           </TableRow>
         ))}
