@@ -2,7 +2,7 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import * as z from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -30,37 +29,40 @@ import {
 } from "@/components/ui/input-group";
 import { Plus } from "lucide-react";
 import { createTodoAction } from "@/actions/todo.actions";
-
-const formSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Tile must be at least 5 characters.")
-    .max(32, "Title must be at most 32 characters."),
-  body: z
-    .string()
-    .max(100, "Description must be at most 100 characters.")
-    .optional(),
-});
-
-export type formValues = z.infer<typeof formSchema>;
+import { formSchema, formValues } from "@/schema";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
+import LoadingSpinner from "./LoadingSpinner";
+import { set } from "zod";
 
 const defaultValues: Partial<formValues> = {
   title: "",
   body: "",
+  completed: false,
 };
 
 export function DialogMenu() {
+  const [checked, setChecked] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+
   const form = useForm<formValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
 
   async function onSubmit(data: formValues) {
+    setIsLoading(true);
+    data.completed = checked;
     await createTodoAction(data);
+    setIsLoading(false);
+    form.reset();
+    setChecked(false);
+    setOpen(false);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <form>
         <DialogTrigger asChild>
           <Button>
@@ -120,12 +122,26 @@ export function DialogMenu() {
                         </InputGroupText>
                       </InputGroupAddon>
                     </InputGroup>
-                    {/* <FieldDescription>
-                      Add the details of your task.
-                    </FieldDescription> */}
+
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="completed"
+                control={form.control}
+                render={({ fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal"
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => setChecked((prev) => !prev)}
+                    />
+                    <Label htmlFor="form-rhf-demo-completed">Completed</Label>
                   </Field>
                 )}
               />
@@ -137,13 +153,23 @@ export function DialogMenu() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => form.reset()}
+                  onClick={() => {
+                    form.reset();
+                    setChecked(false);
+                  }}
                 >
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" form="form-rhf-demo">
-                Submit
+
+              <Button type="submit" form="form-rhf-demo" disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex space-x-2">
+                    <LoadingSpinner /> Saving
+                  </div>
+                ) : (
+                  "Save"
+                )}
               </Button>
             </Field>
           </DialogFooter>
