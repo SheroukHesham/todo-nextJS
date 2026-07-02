@@ -12,6 +12,7 @@ model Todo {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   title String
   body String?
+  user_id String
   completed Boolean @default(false)
   createdAt DateTime @default(now())
 }
