@@ -16,24 +16,25 @@ import TableActions from "./TableActions";
 
 interface IProps {
   todos: ITodo[];
+  userId: string;
 }
 
-export default function TodosTable({ todos }: IProps) {
+export default function TodosTable({ todos, userId }: IProps) {
   return (
     <Table>
       <TableCaption>Recent</TableCaption>
       <TableHeader>
         <TableRow className="bg-sidebar-accent">
-          <TableHead>Todo</TableHead>
+          <TableHead className="pl-10">Todo</TableHead>
 
           <TableHead>Completed</TableHead>
-          <TableHead className="text-right">Edit</TableHead>
+          <TableHead className="text-right pr-10">Edit</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {todos.map((todo) => (
           <TableRow key={todo.id}>
-            <TableCell className="font-medium">
+            <TableCell className="font-medium pl-5">
               <div className="flex justify-start">{todo.title}</div>
             </TableCell>
 
@@ -48,8 +49,8 @@ export default function TodosTable({ todos }: IProps) {
                 )}
               </div>
             </TableCell>
-            <TableCell className="flex justify-end items-center space-x-2">
-              <TableActions todo={todo} />
+            <TableCell className="flex justify-end items-center space-x-2 pr-2">
+              <TableActions todo={todo} userId={userId} />
             </TableCell>
           </TableRow>
         ))}
@@ -57,7 +58,9 @@ export default function TodosTable({ todos }: IProps) {
       <TableFooter>
         <TableRow>
           <TableCell colSpan={2}>Total</TableCell>
-          <TableCell className="text-right">{todos.length}</TableCell>
+          <TableCell className="text-right">
+            {todos.length ? todos.length : "-"}
+          </TableCell>
         </TableRow>
       </TableFooter>
     </Table>

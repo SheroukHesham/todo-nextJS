@@ -35,10 +35,11 @@ import LoadingSpinner from "./LoadingSpinner";
 import { ITodo } from "@/interfaces";
 
 interface IProps {
+  userId: string;
   editTodo?: ITodo;
 }
 
-export function DialogMenu({ editTodo }: IProps) {
+export function DialogMenu({ userId, editTodo }: IProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
@@ -63,16 +64,18 @@ export function DialogMenu({ editTodo }: IProps) {
 
   async function onSubmit(data: formValues) {
     setIsLoading(true);
+    const { title, body, completed } = data;
 
     if (editTodo) {
       await updateTodoAction({
         id: editTodo.id,
-        title: data.title,
-        body: data.body as string,
-        completed: data.completed as boolean,
+        userId,
+        title: title,
+        body: body as string,
+        completed: completed as boolean,
       });
     } else {
-      await createTodoAction(data);
+      await createTodoAction({ title, body, completed, userId });
     }
 
     setIsLoading(false);
@@ -189,8 +192,8 @@ export function DialogMenu({ editTodo }: IProps) {
 
               <Button type="submit" form="form-rhf-demo" disabled={isLoading}>
                 {isLoading ? (
-                  <div className="flex space-x-2">
-                    <LoadingSpinner /> Saving
+                  <div className="flex items-center space-x-2">
+                    <LoadingSpinner /> <div>Saving</div>
                   </div>
                 ) : (
                   "Save"

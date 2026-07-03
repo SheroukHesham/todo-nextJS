@@ -6,18 +6,18 @@ import LoadingSpinner from "./LoadingSpinner";
 import { DialogMenu } from "./DialogMenu";
 import { ITodo } from "@/interfaces";
 
-const TableActions = ({ todo }: { todo: ITodo }) => {
+const TableActions = ({ todo, userId }: { todo: ITodo; userId: string }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
     <>
-      <DialogMenu editTodo={todo} />
+      <DialogMenu userId={userId} editTodo={todo} />
       <Button
         size={"icon"}
         variant={"destructive"}
         onClick={async () => {
           setIsLoading(true);
-          await deleteTodoAction({ id: todo.id });
+          await deleteTodoAction({ id: todo.id, userId });
           setIsLoading(false);
         }}
       >

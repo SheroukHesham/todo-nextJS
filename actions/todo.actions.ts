@@ -1,9 +1,15 @@
 "use server";
 
 import { PrismaClient } from "@/generated/prisma/client";
-import { ITodo } from "@/interfaces";
-import { formValues } from "@/schema";
 import { revalidatePath } from "next/cache";
+
+interface IProps {
+  id?: string;
+  title: string;
+  userId: string;
+  body?: string;
+  completed?: boolean;
+}
 
 const prisma = new PrismaClient();
 
@@ -11,20 +17,25 @@ export const createTodoAction = async ({
   title,
   body,
   completed,
-}: formValues) => {
+  userId,
+}: IProps) => {
   await prisma.todo.create({
     data: {
       title,
       body,
       completed,
+      userId,
     },
   });
 
   revalidatePath("/");
 };
 
-export const getTodoAction = async () => {
-  return await prisma.todo.findMany({ orderBy: { createdAt: "desc" } });
+export const getTodoAction = async ({ userId }: { userId: string }) => {
+  return await prisma.todo.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
 };
 
 export const updateTodoAction = async ({
@@ -32,9 +43,10 @@ export const updateTodoAction = async ({
   body,
   completed,
   id,
-}: ITodo) => {
+  userId,
+}: IProps) => {
   await prisma.todo.update({
-    where: { id },
+    where: { id, userId },
     data: {
       title,
       body,
@@ -45,9 +57,15 @@ export const updateTodoAction = async ({
   revalidatePath("/");
 };
 
-export const deleteTodoAction = async ({ id }: { id: string }) => {
+export const deleteTodoAction = async ({
+  id,
+  userId,
+}: {
+  id: string;
+  userId: string;
+}) => {
   await prisma.todo.delete({
-    where: { id },
+    where: { id, userId },
   });
   revalidatePath("/");
 };
